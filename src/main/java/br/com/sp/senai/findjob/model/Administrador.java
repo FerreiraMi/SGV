@@ -22,15 +22,20 @@ public class Administrador {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
+	
 	@Column(name = "nome", length = 200, nullable = false)
 	private String nome;
+	
 	@Email(message = "insira um email válido!")
 	@Column(name = "email", length = 100, nullable = false)
 	private String email;
+	
 	@Column(name = "nif", length = 50, nullable = true)
 	private String nif;
+	
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(name = "senha", columnDefinition = "TEXT", nullable = false)
 	private String senha;
+	
 	private Boolean ativo;
 }

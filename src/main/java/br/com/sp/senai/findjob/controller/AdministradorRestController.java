@@ -13,9 +13,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -24,6 +26,8 @@ import br.com.sp.senai.findjob.model.Administrador;
 import br.com.sp.senai.findjob.model.TokenJWT;
 import br.com.sp.senai.findjob.repository.AdministradorRepository;
 
+@RestController
+@RequestMapping("api/adm")
 public class AdministradorRestController {
 
 	public static final String SECRET = "f1ndJ0b@";
@@ -38,8 +42,9 @@ public class AdministradorRestController {
 	// criar metodo que aprova e recusa vagas e empresas que "entram" no banco de dados
 	//criar metodo que recebe email com as solicitacoes que entram
 
+	// Alterado somente o 'method' que estava em PUT
 	// metodo para cadastrar empresa
-	@RequestMapping(value = "", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Administrador> cadastraAdministrador(@Valid @RequestBody Administrador administrador) {
 		try {
 			administradorRepository.save(administrador);

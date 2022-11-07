@@ -24,35 +24,45 @@ public class Empresa {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
+
 	@Column(name = "nome", length = 100)
 	private String nome;
+
 	@Email
 	@Column(name = "email", length = 50)
 	private String email;
+
 	@Column(name = "telefone", length = 20)
 	private String telefone;
+
 	@Column(name = "cnpj", length = 20)
 	@CNPJ
 	private String cnpj;
 
-	@OneToMany
-	@JoinTable(name = "vagas")
-	private List<Vaga> vagas;
-
 	@Column(name = "senha", columnDefinition = "TEXT")
 	private String senha;
+
 	@Column(name = "cep", length = 50)
 	private String cep;
+
 	@Column(name = "endereco", length = 100)
 	private String endereco;
+
 	@Column(name = "complemento", length = 15)
 	private String complemento;
+
 	@Column(name = "bairro", length = 50)
 	private String bairro;
+
 	@Column(name = "cidade", length = 50)
 	private String cidade;
+
 	@Column(name = "uf", length = 5)
 	private String uf;
+
 	private Boolean ativo;
 
+	@OneToMany(mappedBy = "empresa")
+	private List<Vaga> vagas;
+	
 }

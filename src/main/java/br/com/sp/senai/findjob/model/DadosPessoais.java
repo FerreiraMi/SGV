@@ -10,6 +10,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
 import lombok.Data;
 
 @Data
@@ -33,10 +36,14 @@ public class DadosPessoais {
 	private String bairro;
 	private String cidade;
 	private String uf;
-	private Boolean pcd;
+	private boolean pcd;
 	
+	//@OneToOne
+	//@JoinColumn(name = "usuario_id")
+	//private Usuario usuario;
+	
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@OneToOne
-	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 	
 }

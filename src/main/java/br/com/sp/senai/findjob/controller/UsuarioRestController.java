@@ -44,6 +44,7 @@ public class UsuarioRestController {
 	//criar metodo para alterar a senha
 	//criar metodo para enviar email "usuario cadastrado com sucesso";
 	
+	// metodo está funcionando
 	// metodo para criar usuario
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> criarUsuario(@RequestBody Usuario usuario, HttpServletRequest request) {
@@ -64,6 +65,7 @@ public class UsuarioRestController {
 		return null;
 	}
 
+	// metodo funcionando
 	// metodo para pegar usuario especifico pelo id
 	@RequestMapping(value = "/especifico/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Object> buscaUsuarioEspecifico(@PathVariable Long id) {
@@ -79,6 +81,7 @@ public class UsuarioRestController {
 		}
 	}
 
+	//metodo funcionando
 	// metodo para listar todos os usuarios inseridos no banco
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Usuario> listaUsuario(Usuario usuario) {
@@ -86,6 +89,7 @@ public class UsuarioRestController {
 
 	}
 
+	//metodo esta funcionando
 	// metodo para atualizar os dados do usuario
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> atualizarUsuario(@PathVariable("id") Long id, @RequestBody Usuario usuario,

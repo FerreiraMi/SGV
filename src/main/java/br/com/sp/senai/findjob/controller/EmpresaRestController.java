@@ -27,6 +27,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import br.com.sp.senai.findjob.model.Empresa;
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.TokenJWT;
+import br.com.sp.senai.findjob.model.Vaga;
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
 
 @CrossOrigin
@@ -48,30 +49,34 @@ public class EmpresaRestController {
 	// criar metodo que envia por email a solicitacao de cadastro da empresa
 	// criar metodo para alterar a senha
 	// criar metodo para enviar email "usuario cadastrado com sucesso";
-
-	// metodo para cadastrar empresa
-	@RequestMapping(value = "", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Empresa> cadastraEmpresa(@Valid @RequestBody Empresa empresa) {
-		try {
+	
+	
+	// refeito metodo POST da Empresa (GR) *Alteração na model
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	public ResponseEntity<Object> cadastroEmpresaPOST(@RequestBody Empresa empresa){
+		if(empresa != null) {
 			empresaRepository.save(empresa);
 			return ResponseEntity.status(201).body(empresa);
-		} catch (DataIntegrityViolationException e) {
-			e.printStackTrace();
-			return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} else {
+			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
+			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
+	
 	// metodo para listar todos as empresas inseridos no banco
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Empresa> listaEmpresa(Empresa empresa) {
 		return empresaRepository.findAll();
-
+		
+	}
+	
+	// refazendo metodo que tras a empresa pelo ID (GR)*add uma Query no Repository
+	@RequestMapping(value = "/empresaID/{id}", method = RequestMethod.GET)
+	public Iterable<Empresa> listaPorID(@PathVariable("id") Long id){
+		return empresaRepository.buscaPorIdEmpresa(id);
 	}
 
-	// metodo para pegar empresa especifica pelo id
+	/*// metodo para pegar empresa especifica pelo id
 	@RequestMapping(value = "/empresa/{id}", method = RequestMethod.GET)
 	public ResponseEntity<Object> buscaUsuarioEspecifico(@PathVariable Long id) {
 		try {
@@ -84,7 +89,24 @@ public class EmpresaRestController {
 			e.printStackTrace();
 			return ResponseEntity.status(500).body(e);
 		}
-	}
+	}*/
+	
+	/*// metodo para cadastrar empresa
+	@RequestMapping(value = "", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Empresa> cadastraEmpresa(@Valid @RequestBody Empresa empresa) {
+		try {
+			empresaRepository.save(empresa);
+			return ResponseEntity.status(201).body(empresa);
+		} catch (DataIntegrityViolationException e) {
+			e.printStackTrace();
+			return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}*/
+
+
 
 	// metodo para atualizar os dados da Empresa
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
