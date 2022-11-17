@@ -12,4 +12,6 @@ public interface UsuarioRepository extends PagingAndSortingRepository<Usuario, L
 
 	// buscar usuario no banco por Id e senha.
 	public Usuario findByIdAndSenha(Long id, @NotNull String senha);
+
+	public Usuario findByCpfAndSenha(String cpf, String senha);
 }

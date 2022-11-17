@@ -24,10 +24,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
+
 import br.com.sp.senai.findjob.model.Empresa;
 import br.com.sp.senai.findjob.model.Erro;
+import br.com.sp.senai.findjob.model.Sucesso;
 import br.com.sp.senai.findjob.model.TokenJWT;
-import br.com.sp.senai.findjob.model.Vaga;
+
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
 
 @CrossOrigin
@@ -75,40 +77,34 @@ public class EmpresaRestController {
 	public Iterable<Empresa> listaPorID(@PathVariable("id") Long id){
 		return empresaRepository.buscaPorIdEmpresa(id);
 	}
-
-	/*// metodo para pegar empresa especifica pelo id
-	@RequestMapping(value = "/empresa/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Object> buscaUsuarioEspecifico(@PathVariable Long id) {
-		try {
-			Optional<Empresa> e = empresaRepository.findById(id);
-			if (e.isEmpty()) {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("empresa não localizada");
-			}
-			return ResponseEntity.status(200).body(e);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return ResponseEntity.status(500).body(e);
-		}
-	}*/
+	/*
+	 * //metodo para pegar empresa especifica pelo id
+	 * 
+	 * @RequestMapping(value = "/empresa/{id}", method = RequestMethod.GET) public
+	 * ResponseEntity<Object> buscaUsuarioEspecifico(@PathVariable Long id) { try {
+	 * Optional<Empresa> e = empresaRepository.findById(id); if (e.isEmpty()) {
+	 * return
+	 * ResponseEntity.status(HttpStatus.BAD_REQUEST).body("empresa não localizada");
+	 * } return ResponseEntity.status(200).body(e); } catch (Exception e) {
+	 * e.printStackTrace(); return ResponseEntity.status(500).body(e); } }
+	 */
 	
-	/*// metodo para cadastrar empresa
-	@RequestMapping(value = "", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Empresa> cadastraEmpresa(@Valid @RequestBody Empresa empresa) {
-		try {
-			empresaRepository.save(empresa);
-			return ResponseEntity.status(201).body(empresa);
-		} catch (DataIntegrityViolationException e) {
-			e.printStackTrace();
-			return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}*/
+	/*
+	 * //metodo para cadastrar empresa
+	 * 
+	 * @RequestMapping(value = "", method = RequestMethod.PUT, consumes =
+	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<Empresa>
+	 * cadastraEmpresa(@Valid @RequestBody Empresa empresa) { try {
+	 * empresaRepository.save(empresa); return
+	 * ResponseEntity.status(201).body(empresa); } catch
+	 * (DataIntegrityViolationException e) { e.printStackTrace(); return new
+	 * ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR); } catch (Exception
+	 * e) { e.printStackTrace(); return new
+	 * ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR); } }
+	 */
 
 
-
-	// metodo para atualizar os dados da Empresa
+	// metodo para atualizar os dados da Empresa *Funcionando
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> atualizarEmpresa(@PathVariable("id") Long id, @RequestBody Empresa empresa,
 			HttpServletRequest request) {
@@ -125,7 +121,7 @@ public class EmpresaRestController {
 			String cripto = this.passwordEncoder.encode(empresa.getSenha());
 
 			// pega a senha criptografada
-			((Empresa) empresaRepository).setSenha(cripto);
+			empresa.setSenha(cripto);
 
 			empresaRepository.save(empresa);
 			return new ResponseEntity<Object>(HttpStatus.OK);
@@ -180,19 +176,35 @@ public class EmpresaRestController {
 		return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
 	}
 
-	// metodo para tornar o estado Ativo da empresa como false
+	/*
+	 * // metodo para tornar o estado Ativo da empresa como false
+	 * 
+	 * @RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT) public
+	 * ResponseEntity<Object> desativaEmpresa(@PathVariable("id") Long id,
+	 * HttpServletRequest request) { Optional<Empresa> desativar =
+	 * empresaRepository.findById(id);
+	 * 
+	 * if (desativar.get().getId() == id) { desativar.get().setAtivo(false);
+	 * empresaRepository.save(desativar.get()); System.out.println("passou aqui");
+	 * return new ResponseEntity<Object>(HttpStatus.OK);
+	 * 
+	 * } else { Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR,
+	 * "Não foi possivel desativar empresa", null);
+	 * System.out.println("xiiiiiiiiiiiiiiiiiiiiiiii"); return new
+	 * ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
+	 */
+			
 	@RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Object> desativaEmpresa(@PathVariable("id") Long id, HttpServletRequest request) {
-		Optional<Empresa> desativar = empresaRepository.findById(id);
+	public ResponseEntity<Object> desativar(@PathVariable("id") Long id, Empresa empresa,HttpServletRequest request) {		
+		empresa = empresaRepository.findById(id).get();
+		empresa.setAtivo(false);
+		empresaRepository.save(empresa);
+		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
+		
 
-		if (desativar.get().getId() == id) {
-			desativar.get().setAtivo(false);
-			empresaRepository.save(desativar.get());
-			return new ResponseEntity<Object>(HttpStatus.OK);
-		} else {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel desativar empresa", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
+		
 	}
+
+	
 }

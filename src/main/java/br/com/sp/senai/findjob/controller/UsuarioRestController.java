@@ -1,5 +1,6 @@
 package br.com.sp.senai.findjob.controller;
 
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -122,66 +123,72 @@ public class UsuarioRestController {
 		return valido;
 	}
 
-	// metodo para realizar login
+	
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> login(@RequestBody Usuario usuario, HttpServletRequest request) {
-
+	public ResponseEntity<TokenJWT> login(@RequestBody Usuario usuario, HttpServletRequest request){
+		
 		Boolean valido = validarSenha(usuario);
-
-		if (valido = true) {
-			// se a senha for valida insere dentro da variavel usuario
-			usuario = usuarioRepository.findByIdAndSenha(usuario.getId(), usuario.getSenha());
-
-			// verifica se existe usuario cadastrado
-			if (usuario != null) {
-				System.out.println(usuario.getClass());
-
-				// cria uma variavel payload e insere os dados do usuario
-				Map<String, Object> payload = new HashMap<String, Object>();
-
-				payload.put("nome", usuario.getNome());
-				payload.put("email", usuario.getEmail());
-				payload.put("senha", usuario.getSenha());
-				payload.put("ativo", usuario.getAtivo());
-
-				// coloca assinatura do algoritmo no token
-				Algorithm algoritimo = Algorithm.HMAC512(SECRET);
-
-				// instancia a classe token
-				TokenJWT tokenJwt = new TokenJWT();
-
-				// adiciona os recursos no token
-				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritimo));
-				System.out.println(tokenJwt);
-
-				// envia o token
-				return ResponseEntity.ok(tokenJwt);
-			}
+		
+		// buscar o usuário no banco de dados
+		usuario = usuarioRepository.findByCpfAndSenha(usuario.getCpf(), usuario.getSenha());
+		// verifica se o usuário não é nulo
+		if(usuario != null) {
+			// variável para inserir dados no payload
+			Map<String, Object> payload = new HashMap<String, Object>();
+			payload.put("id_user", usuario.getId());
+			payload.put("cpf", usuario.getCpf());
+			payload.put("nome", usuario.getNome());
+			payload.put("email", usuario.getEmail());
+			payload.put("senha", usuario.getSenha());
+			payload.put("ativo", usuario.getAtivo());
+			
+			// variável para a data de expiração
+			Calendar expiracao = Calendar.getInstance();
+			
+			// adiciona
+			expiracao.add(Calendar.HOUR, 1);
+			
+			// algoritmo para assinar o toke
+			Algorithm algoritmo = Algorithm.HMAC256(SECRET);
+			
+			// cria o objeto para receber token
+			TokenJWT tokenJwt = new TokenJWT();
+			
+			// gera o token
+			tokenJwt.setToken(JWT.create()
+					.withPayload(payload)
+					.withIssuer(EMISSOR)
+					.withExpiresAt(expiracao.getTime())
+					.sign(algoritmo));
+			return ResponseEntity.ok(tokenJwt);
+		}else {
+			return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
 		}
-		return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
 	}
+	
+	/*}
 
 	// metodo para excluir usuario pelo id
 	@RequestMapping(value = "/excluir/{id}", method = RequestMethod.PUT)
 	public boolean excluirUsuario(@PathVariable Long id) {
 		usuarioRepository.deleteById(id);
 		return true;
-	}
-
-	// metodo para tornar o estado Ativo do usuario como false
-	@RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Object> desativaUsuario(@PathVariable("id") Long id, HttpServletRequest request) {
-		Optional<Usuario> desativar = usuarioRepository.findById(id);
-
-		if (desativar.get().getId() == id) {
-			desativar.get().setAtivo(false);
-			usuarioRepository.save(desativar.get());
-			return new ResponseEntity<Object>(HttpStatus.OK);
-		} else {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel desativar usuario", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-
-	}
+	}*/
+	//metodo para tornar o estado Ativo do usuario como false
+	  
+	 @RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT) 
+	 public ResponseEntity<Object> desativaUsuario(@PathVariable("id") Long id,
+	 HttpServletRequest request) { Optional<Usuario> desativar =
+	 usuarioRepository.findById(id);
+	  
+	  if (desativar.get().getId() == id) { desativar.get().setAtivo(false);
+	  usuarioRepository.save(desativar.get()); return new
+	  ResponseEntity<Object>(HttpStatus.OK); } else { Erro erro = new
+	  Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel desativar usuario",
+	  null); return new ResponseEntity<Object>(erro,
+	  HttpStatus.INTERNAL_SERVER_ERROR); }
+	  
+	  }
+	 
 
 }

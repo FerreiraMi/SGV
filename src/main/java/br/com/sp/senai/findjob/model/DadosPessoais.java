@@ -37,10 +37,7 @@ public class DadosPessoais {
 	private String cidade;
 	private String uf;
 	private boolean pcd;
-	
-	//@OneToOne
-	//@JoinColumn(name = "usuario_id")
-	//private Usuario usuario;
+
 	
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@OneToOne
