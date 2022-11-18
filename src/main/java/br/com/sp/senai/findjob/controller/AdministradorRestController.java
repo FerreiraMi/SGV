@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.Session;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -34,6 +35,7 @@ public class AdministradorRestController {
 
 	public static final String SECRET = "f1ndJ0b@";
 	public static final String EMISSOR = "SistemaGerenciadorVaga";
+	private static final int Administrador = 0;
 
 	@Autowired
 	private AdministradorRepository administradorRepository;
@@ -68,45 +70,43 @@ public class AdministradorRestController {
 			return new ResponseEntity<Administrador>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
-	// metodo para fazer o login
-	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> login(@RequestBody Administrador administrador, HttpServletRequest request) {
-
-		Boolean validar = validarSenhaAdm(administrador);
-
-		if (validar = true) {
-			// insere nif e senha dentro da variavel
-			administrador = administradorRepository.findByIdAndSenha(administrador.getId(), administrador.getSenha());
-
-			// verifica se existe administrador cadastrado no banco
-			if (administrador != null) {
-				System.out.println(administrador.getNome());
-
-				Map<String, Object> payload = new HashMap<String, Object>();
-
-				payload.put("nome", administrador.getNome());
-				payload.put("email", administrador.getEmail());
-				payload.put("senha", administrador.getSenha());
-				payload.put("nif", administrador.getNif());
-
-				// coloca assinatura do algoritmo no token
-				Algorithm algoritmo = Algorithm.HMAC512(SECRET);
-
-				// instancia a classe token
-				TokenJWT tokenJwt = new TokenJWT();
-
-				// adiciona no token
-				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritmo));
-
-				System.out.println(tokenJwt);
-
-				// envia o token
-				return ResponseEntity.ok(tokenJwt);
-			}
-		}
-		return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
-	}
+	
+	/*
+	 * // metodo para fazer o login
+	 * 
+	 * @RequestMapping(value = "/login", method = RequestMethod.POST, consumes =
+	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<Object>
+	 * login(@RequestBody Administrador administrador, HttpServletRequest request) {
+	 * 
+	 * Boolean validar = validarSenhaAdm(administrador);
+	 * 
+	 * if (validar = true) { // insere nif e senha dentro da variavel administrador
+	 * = administradorRepository.findByIdAndSenha(administrador.getId(),
+	 * administrador.getSenha());
+	 * 
+	 * // verifica se existe administrador cadastrado no banco if (administrador !=
+	 * null) { System.out.println(administrador.getNome());
+	 * 
+	 * Map<String, Object> payload = new HashMap<String, Object>();
+	 * 
+	 * payload.put("nome", administrador.getNome()); payload.put("email",
+	 * administrador.getEmail()); payload.put("senha", administrador.getSenha());
+	 * payload.put("nif", administrador.getNif());
+	 * 
+	 * // coloca assinatura do algoritmo no token Algorithm algoritmo =
+	 * Algorithm.HMAC512(SECRET);
+	 * 
+	 * // instancia a classe token TokenJWT tokenJwt = new TokenJWT();
+	 * 
+	 * // adiciona no token
+	 * tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(
+	 * algoritmo));
+	 * 
+	 * System.out.println(tokenJwt);
+	 * 
+	 * // envia o token return ResponseEntity.ok(tokenJwt); } } return new
+	 * ResponseEntity<Object>(HttpStatus.UNAUTHORIZED); }
+	 */
 
 	// metodo para validar a senha quando fazer o login
 	public Boolean validarSenhaAdm(Administrador administrador) {

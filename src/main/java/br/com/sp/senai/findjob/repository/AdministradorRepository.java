@@ -8,4 +8,6 @@ public interface AdministradorRepository extends PagingAndSortingRepository<Admi
 
 	Administrador findByIdAndSenha(Long id, String senha);
 
+	Administrador findByNifAndSenha(String nif, String senha);
+
 }

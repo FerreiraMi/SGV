@@ -1,6 +1,5 @@
 package br.com.sp.senai.findjob.controller;
 
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -123,49 +122,68 @@ public class UsuarioRestController {
 		return valido;
 	}
 
-	
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<TokenJWT> login(@RequestBody Usuario usuario, HttpServletRequest request){
-		
-		Boolean valido = validarSenha(usuario);
-		
-		// buscar o usuário no banco de dados
+	public ResponseEntity<TokenJWT> login(@RequestBody Usuario usuario) {
+		// buscar o usuario no banco de dados
 		usuario = usuarioRepository.findByCpfAndSenha(usuario.getCpf(), usuario.getSenha());
+		
 		// verifica se o usuário não é nulo
-		if(usuario != null) {
+		if (usuario != null) {
 			// variável para inserir dados no payload
 			Map<String, Object> payload = new HashMap<String, Object>();
-			payload.put("id_user", usuario.getId());
-			payload.put("cpf", usuario.getCpf());
-			payload.put("nome", usuario.getNome());
+			payload.put("id", usuario.getId());
+			payload.put("name", usuario.getNome());
 			payload.put("email", usuario.getEmail());
-			payload.put("senha", usuario.getSenha());
-			payload.put("ativo", usuario.getAtivo());
+			payload.put("TipoUser", usuario.getTipoUsuario().toString());
 			
-			// variável para a data de expiração
-			Calendar expiracao = Calendar.getInstance();
+			// variável para data de expiração
+			//Calendar expiracao = Calendar.getInstance();
 			
-			// adiciona
-			expiracao.add(Calendar.HOUR, 1);
-			
-			// algoritmo para assinar o toke
+			// adiciona o tempo para a expiração
+			//expiracao.add(Calendar.HOUR, 1);
+			// algoritmo para assinar o token
 			Algorithm algoritmo = Algorithm.HMAC256(SECRET);
-			
-			// cria o objeto para receber token
+			// cria o token
 			TokenJWT tokenJwt = new TokenJWT();
-			
 			// gera o token
-			tokenJwt.setToken(JWT.create()
-					.withPayload(payload)
-					.withIssuer(EMISSOR)
-					.withExpiresAt(expiracao.getTime())
-					.sign(algoritmo));
+			tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritmo));
 			return ResponseEntity.ok(tokenJwt);
-		}else {
+		} else {
 			return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
 		}
 	}
 	
+	/*
+	 * @RequestMapping(value = "/login", method = RequestMethod.POST, consumes =
+	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<TokenJWT>
+	 * login(@RequestBody Usuario usuario, HttpServletRequest request){
+	 * 
+	 * Boolean valido = validarSenha(usuario);
+	 * 
+	 * // buscar o usuário no banco de dados usuario =
+	 * usuarioRepository.findByCpfAndSenha(usuario.getCpf(), usuario.getSenha()); //
+	 * verifica se o usuário não é nulo if(usuario != null) { // variável para
+	 * inserir dados no payload Map<String, Object> payload = new HashMap<String,
+	 * Object>(); payload.put("id_user", usuario.getId()); payload.put("cpf",
+	 * usuario.getCpf()); payload.put("nome", usuario.getNome());
+	 * payload.put("email", usuario.getEmail()); payload.put("senha",
+	 * usuario.getSenha()); payload.put("ativo", usuario.getAtivo());
+	 * 
+	 * // variável para a data de expiração Calendar expiracao =
+	 * Calendar.getInstance();
+	 * 
+	 * // adiciona expiracao.add(Calendar.HOUR, 1);
+	 * 
+	 * // algoritmo para assinar o toke Algorithm algoritmo =
+	 * Algorithm.HMAC256(SECRET);
+	 * 
+	 * // cria o objeto para receber token TokenJWT tokenJwt = new TokenJWT();
+	 * 
+	 * // gera o token tokenJwt.setToken(JWT.create() .withPayload(payload)
+	 * .withIssuer(EMISSOR) .withExpiresAt(expiracao.getTime()) .sign(algoritmo));
+	 * return ResponseEntity.ok(tokenJwt); }else { return new
+	 * ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED); } }
+	 */
 	/*}
 
 	// metodo para excluir usuario pelo id

@@ -2,13 +2,10 @@ package br.com.sp.senai.findjob.controller;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +26,9 @@ import br.com.sp.senai.findjob.model.Empresa;
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.Sucesso;
 import br.com.sp.senai.findjob.model.TokenJWT;
-
+import br.com.sp.senai.findjob.model.Vaga;
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
+import br.com.sp.senai.findjob.repository.VagaRepository;
 
 @CrossOrigin
 @RestController
@@ -39,6 +37,9 @@ public class EmpresaRestController {
 
 	@Autowired
 	private EmpresaRepository empresaRepository;
+	
+	@Autowired
+	private VagaRepository vagaRepository;
 
 	public static final String SECRET = "f1ndJ0b@";
 	public static final String EMISSOR = "SistemaGerenciadorVaga";
@@ -54,16 +55,47 @@ public class EmpresaRestController {
 	
 	
 	// refeito metodo POST da Empresa (GR) *Alteração na model
-	@RequestMapping(value = "", method = RequestMethod.POST)
-	public ResponseEntity<Object> cadastroEmpresaPOST(@RequestBody Empresa empresa){
-		if(empresa != null) {
-			empresaRepository.save(empresa);
-			return ResponseEntity.status(201).body(empresa);
+	/*
+	 * @RequestMapping(value = "", method = RequestMethod.POST) public
+	 * ResponseEntity<Object> cadastroEmpresaPOST(@RequestBody Empresa empresa){
+	 * if(empresa != null) { empresaRepository.save(empresa); return
+	 * ResponseEntity.status(201).body(empresa); } else { Erro erro = new
+	 * Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null); return new
+	 * ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR); } }
+	 */
+	@RequestMapping(value = "/VagaEmpresa", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> criarVagaporEmpresa(@RequestBody Empresa empresa, HttpServletRequest request, Long id) {
+		if (empresa != null) {
+			empresa.setAtivo(true);
+			
+			/*
+			 * for (int i = 0; i < empresa.getVagas().size(); i++) { Vaga vaga = new Vaga();
+			 * vaga.setId(empresa.getId().get(i).get);
+			 * 
+			 * }
+			 * 
+			 * empresaRepository.save(empresa);
+			 */
+			for (int i = 0; i < empresa.getVagas().size(); i++) {
+				Vaga vaga = empresa.getVagas().get(i);
+				vaga.setEmpresa(empresa);
+				vagaRepository.save(vaga);
+			}
+			
+			Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+
+			Object[] arrayVagas = new Object[2];
+			arrayVagas[0] = sucesso;
+			arrayVagas[1] = empresa.getId(); 
+
+			ResponseEntity<Object> okpost = new ResponseEntity<Object>(arrayVagas, HttpStatus.OK);
+			return okpost;
 		} else {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
+			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel cadastrar o curso", null);
 			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+
 	
 	// metodo para listar todos as empresas inseridos no banco
 	@RequestMapping(value = "", method = RequestMethod.GET)

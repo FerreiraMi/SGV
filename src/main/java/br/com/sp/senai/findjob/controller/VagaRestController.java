@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.Vaga;
@@ -31,6 +29,8 @@ public class VagaRestController {
 	private EmpresaRepository empresaRepository;
 
 	// criar metodo que pega a empresa relacionada aquela vaga
+	// metodo para criar o curso
+		
 	// criar metodo que lista vaga por AreaProfissional *perguntar se é para listar
 	// em ordem de areaProfissional ou é para fazer uma busca por areaProfissional
 

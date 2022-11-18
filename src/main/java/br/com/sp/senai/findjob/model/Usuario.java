@@ -28,28 +28,35 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
-	
+
 	@Column(name = "nome", length = 200, nullable = false)
 	private String nome;
-	
+
 	@Email(message = "insira um email válido!")
 	@Column(name = "email", length = 100, nullable = false)
 	private String email;
-	
+
 	@CPF(message = "insira um CPF válido")
 	@Column(name = "cpf", length = 50, nullable = false)
 	private String cpf;
-	
+
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(name = "senha", columnDefinition = "TEXT", nullable = false)
 	private String senha;
-	
+
 	private Boolean ativo;
 
-	//@OneToOne
-	//@JoinTable(name = "dadosPessoais")
-	//private DadosPessoais dadosPessoais;
-	
+	public TipoUsuario tipoUsuario;
+
 	@OneToOne(mappedBy = "usuario")
 	private DadosPessoais dadosPessoais;
+
+	public void setUsuario(String nome, String email, TipoUsuario tipoUsuario, String cpf, boolean ativo) {
+		this.nome = nome;
+		this.email = email;
+		this.tipoUsuario = tipoUsuario;
+		this.cpf = cpf;
+		this.ativo = ativo;
+	}
+
 }

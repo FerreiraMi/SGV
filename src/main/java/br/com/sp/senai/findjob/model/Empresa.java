@@ -35,7 +35,7 @@ public class Empresa {
 	private String telefone;
 
 	@Column(name = "cnpj", length = 20)
-	@CNPJ
+	//@CNPJ
 	private String cnpj;
 
 	@Column(name = "senha", columnDefinition = "TEXT")
