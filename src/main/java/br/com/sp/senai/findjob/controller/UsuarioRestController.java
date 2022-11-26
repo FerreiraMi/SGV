@@ -35,34 +35,39 @@ public class UsuarioRestController {
 	@Autowired
 	private UsuarioRepository usuarioRepository;
 
-	public static final String SECRET = "f1ndJ0b@";
-	public static final String EMISSOR = "SistemaGerenciadorVagas";
+	public static final String EMISSOR = "Senai";
+	public static final String SECRET = "F1Lh@sD3J32u2";
 
 	// metodo encoder para salvar a criptografia
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	//criar metodo para alterar a senha
-	//criar metodo para enviar email "usuario cadastrado com sucesso";
-	
+	// criar metodo para alterar a senha
+	// criar metodo para enviar email "usuario cadastrado com sucesso";
+
 	// metodo está funcionando
 	// metodo para criar usuario
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> criarUsuario(@RequestBody Usuario usuario, HttpServletRequest request) {
-		if (usuario != null) {
-			// criptografa a senha
-			String cripto = this.passwordEncoder.encode(usuario.getSenha());
+	public ResponseEntity<Usuario> cadastrar(@RequestBody Usuario usuario) {
 
-			// pega a senha criptografada
-			usuario.setSenha(cripto);
+		if (usuarioRepository.findByEmail(usuario.getEmail()) != null) {
+			return new ResponseEntity<Usuario>(HttpStatus.UNPROCESSABLE_ENTITY);
+		} else if (usuarioRepository.findByCpf(usuario.getCpf()) != null) {
+			return new ResponseEntity<Usuario>(HttpStatus.CONFLICT);
+			/*
+			 * } else if (usuarioRepository.findByNif(usuario.getNif()) != null) { return
+			 * new ResponseEntity<Usuario>(HttpStatus.CONFLICT);
+			 */}
 
-			// ativa o usuario no banco de dados
-			usuario.setAtivo(true);
-			usuarioRepository.save(usuario);
-		} else {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel cadastrar Usuario", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
+		if (usuarioRepository.findByCpf(usuario.getCpf()) == null
+				|| usuarioRepository.findByEmail(usuario.getEmail()) == null) {
+			try {
+				usuarioRepository.save(usuario);
+				return new ResponseEntity<Usuario>(HttpStatus.CREATED);
+			} catch (Exception e) {
+				return new ResponseEntity<Usuario>(HttpStatus.BAD_REQUEST);
+			}
 		}
-		return null;
+		return new ResponseEntity<Usuario>(HttpStatus.BAD_REQUEST);
 	}
 
 	// metodo funcionando
@@ -81,7 +86,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	//metodo funcionando
+	// metodo funcionando
 	// metodo para listar todos os usuarios inseridos no banco
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Usuario> listaUsuario(Usuario usuario) {
@@ -89,7 +94,7 @@ public class UsuarioRestController {
 
 	}
 
-	//metodo esta funcionando
+	// metodo esta funcionando
 	// metodo para atualizar os dados do usuario
 	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Object> atualizarUsuario(@PathVariable("id") Long id, @RequestBody Usuario usuario,
@@ -126,87 +131,40 @@ public class UsuarioRestController {
 	public ResponseEntity<TokenJWT> login(@RequestBody Usuario usuario) {
 		// buscar o usuario no banco de dados
 		usuario = usuarioRepository.findByCpfAndSenha(usuario.getCpf(), usuario.getSenha());
-		
 		// verifica se o usuário não é nulo
+	
+
 		if (usuario != null) {
 			// variável para inserir dados no payload
 			Map<String, Object> payload = new HashMap<String, Object>();
 			payload.put("id", usuario.getId());
 			payload.put("name", usuario.getNome());
 			payload.put("email", usuario.getEmail());
+			payload.put("cpf", usuario.getCpf());
 			payload.put("TipoUser", usuario.getTipoUsuario().toString());
-			
-			// variável para data de expiração
-			//Calendar expiracao = Calendar.getInstance();
-			
-			// adiciona o tempo para a expiração
-			//expiracao.add(Calendar.HOUR, 1);
+
 			// algoritmo para assinar o token
 			Algorithm algoritmo = Algorithm.HMAC256(SECRET);
 			// cria o token
 			TokenJWT tokenJwt = new TokenJWT();
 			// gera o token
 			tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritmo));
+			
+			System.out.println("passou pelo login");
 			return ResponseEntity.ok(tokenJwt);
+			
+
 		} else {
+			System.out.println("passou direto");
 			return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
 		}
 	}
+
 	
-	/*
-	 * @RequestMapping(value = "/login", method = RequestMethod.POST, consumes =
-	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<TokenJWT>
-	 * login(@RequestBody Usuario usuario, HttpServletRequest request){
-	 * 
-	 * Boolean valido = validarSenha(usuario);
-	 * 
-	 * // buscar o usuário no banco de dados usuario =
-	 * usuarioRepository.findByCpfAndSenha(usuario.getCpf(), usuario.getSenha()); //
-	 * verifica se o usuário não é nulo if(usuario != null) { // variável para
-	 * inserir dados no payload Map<String, Object> payload = new HashMap<String,
-	 * Object>(); payload.put("id_user", usuario.getId()); payload.put("cpf",
-	 * usuario.getCpf()); payload.put("nome", usuario.getNome());
-	 * payload.put("email", usuario.getEmail()); payload.put("senha",
-	 * usuario.getSenha()); payload.put("ativo", usuario.getAtivo());
-	 * 
-	 * // variável para a data de expiração Calendar expiracao =
-	 * Calendar.getInstance();
-	 * 
-	 * // adiciona expiracao.add(Calendar.HOUR, 1);
-	 * 
-	 * // algoritmo para assinar o toke Algorithm algoritmo =
-	 * Algorithm.HMAC256(SECRET);
-	 * 
-	 * // cria o objeto para receber token TokenJWT tokenJwt = new TokenJWT();
-	 * 
-	 * // gera o token tokenJwt.setToken(JWT.create() .withPayload(payload)
-	 * .withIssuer(EMISSOR) .withExpiresAt(expiracao.getTime()) .sign(algoritmo));
-	 * return ResponseEntity.ok(tokenJwt); }else { return new
-	 * ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED); } }
-	 */
-	/*}
-
-	// metodo para excluir usuario pelo id
-	@RequestMapping(value = "/excluir/{id}", method = RequestMethod.PUT)
-	public boolean excluirUsuario(@PathVariable Long id) {
-		usuarioRepository.deleteById(id);
-		return true;
-	}*/
-	//metodo para tornar o estado Ativo do usuario como false
-	  
-	 @RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT) 
-	 public ResponseEntity<Object> desativaUsuario(@PathVariable("id") Long id,
-	 HttpServletRequest request) { Optional<Usuario> desativar =
-	 usuarioRepository.findById(id);
-	  
-	  if (desativar.get().getId() == id) { desativar.get().setAtivo(false);
-	  usuarioRepository.save(desativar.get()); return new
-	  ResponseEntity<Object>(HttpStatus.OK); } else { Erro erro = new
-	  Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel desativar usuario",
-	  null); return new ResponseEntity<Object>(erro,
-	  HttpStatus.INTERNAL_SERVER_ERROR); }
-	  
-	  }
-	 
-
+	  // metodo para excluir usuario pelo id
+	  	  @RequestMapping(value = "/excluir/{id}", method = RequestMethod.DELETE) public
+	                       boolean excluirUsuario(@PathVariable Long id) {
+	                       usuarioRepository.deleteById(id); return true; }
+	
 }
+

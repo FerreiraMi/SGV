@@ -35,7 +35,6 @@ public class AdministradorRestController {
 
 	public static final String SECRET = "f1ndJ0b@";
 	public static final String EMISSOR = "SistemaGerenciadorVaga";
-	private static final int Administrador = 0;
 
 	@Autowired
 	private AdministradorRepository administradorRepository;
@@ -116,7 +115,6 @@ public class AdministradorRestController {
 		Boolean valido = passwordEncoder.matches(administrador.getSenha(), senha);
 		return valido;
 	}
-
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Administrador> buscaAdm(Administrador administrador) {
 		return administradorRepository.findAll();

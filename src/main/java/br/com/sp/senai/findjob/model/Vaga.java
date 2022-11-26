@@ -77,7 +77,7 @@ public class Vaga {
 	@Column(name = "area_profissional", nullable = true)
 	private AreaProfissional areaProfissional;
 
-	@JsonProperty(access = Access.WRITE_ONLY)
+	
 	@ManyToOne
 	private Empresa empresa;
 

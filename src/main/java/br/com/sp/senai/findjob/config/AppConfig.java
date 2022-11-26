@@ -30,6 +30,7 @@ public class AppConfig implements WebMvcConfigurer {
 		ds.setPassword("root");
 		return ds;
 	}
+	
 
 	@Bean
 	public JpaVendorAdapter jpaVendorAdapter() {
