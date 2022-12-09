@@ -13,6 +13,9 @@ import javax.validation.constraints.Email;
 
 import org.hibernate.validator.constraints.br.CNPJ;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
+
 import lombok.Data;
 
 @Data
@@ -35,9 +38,10 @@ public class Empresa {
 	private String telefone;
 
 	@Column(name = "cnpj", length = 20)
-	//@CNPJ
+	// @CNPJ
 	private String cnpj;
 
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(name = "senha", columnDefinition = "TEXT")
 	private String senha;
 
@@ -46,7 +50,7 @@ public class Empresa {
 
 	@Column(name = "endereco", length = 100)
 	private String endereco;
-	
+
 	@Column(name = "numero", length = 100)
 	private String numero;
 
@@ -62,9 +66,27 @@ public class Empresa {
 	@Column(name = "uf", length = 5)
 	private String uf;
 
-	private Boolean ativo;
+	public TipoUsuario tipoUsuario;
 
+	private Boolean ativo;
+	private Boolean aprova;
+
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@OneToMany(mappedBy = "empresa")
 	private List<Vaga> vagas;
+
 	
+	  
+	/*
+	 * public void setEmpresa(String nome, String email, String telefone, String
+	 * cnpj, String cep, String endereco, String numero, String complemento, String
+	 * bairro, String cidade, String uf, TipoUsuario tipoUsuario, boolean ativo,
+	 * boolean aprova) { this.nome = nome; this.email = email; this.telefone =
+	 * telefone; this.cnpj = cnpj; this.cep = cep; this.endereco = endereco;
+	 * this.numero = numero; this.complemento = complemento; this.bairro = bairro;
+	 * this.cidade = cidade; this.uf = uf; this.tipoUsuario = tipoUsuario;
+	 * this.ativo = ativo; this.aprova = aprova; }
+	 */
+	 
+
 }

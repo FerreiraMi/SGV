@@ -28,9 +28,9 @@ public class AppConfig implements WebMvcConfigurer {
 		ds.setUrl("jdbc:mysql://localhost:3307/findjob");
 		ds.setUsername("root");
 		ds.setPassword("root");
+	
 		return ds;
 	}
-	
 
 	@Bean
 	public JpaVendorAdapter jpaVendorAdapter() {

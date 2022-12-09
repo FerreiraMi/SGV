@@ -21,12 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 
-
 import br.com.sp.senai.findjob.model.Empresa;
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.Sucesso;
 import br.com.sp.senai.findjob.model.TokenJWT;
-import br.com.sp.senai.findjob.model.Vaga;
+import br.com.sp.senai.findjob.model.Usuario;
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
 import br.com.sp.senai.findjob.repository.VagaRepository;
 
@@ -37,76 +36,89 @@ public class EmpresaRestController {
 
 	@Autowired
 	private EmpresaRepository empresaRepository;
-	
-	@Autowired
-	private VagaRepository vagaRepository;
 
+	
 	public static final String SECRET = "f1ndJ0b@";
 	public static final String EMISSOR = "SistemaGerenciadorVaga";
 
 	// metodo encoder para salvar a criptografia
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	// criar metodo que solicita aprovacao da empresa pelo adm
-	// criar metodo status da empresa se aprovada ou se recusada pelo adm
-	// criar metodo que envia por email a solicitacao de cadastro da empresa
-	// criar metodo para alterar a senha
-	// criar metodo para enviar email "usuario cadastrado com sucesso";
-	
-	
+	// cria o alterar senha
+
 	// refeito metodo POST da Empresa (GR) *Alteração na model
+
+	@RequestMapping(value = "", method = RequestMethod.POST) public
+	  ResponseEntity<Empresa> cadastroEmpresaPOST(@RequestBody Empresa empresa) {
+	
+		if (empresaRepository.findByEmail(empresa.getEmail()) != null) {
+			return new ResponseEntity<Empresa>(HttpStatus.UNPROCESSABLE_ENTITY);
+		} else if (empresaRepository.findByCnpj(empresa.getCnpj()) != null) {
+			return new ResponseEntity<Empresa>(HttpStatus.CONFLICT);
+			}
+
+		if (empresaRepository.findByEmail(empresa.getEmail()) == null
+				|| empresaRepository.findByCnpj(empresa.getCnpj()) == null) {
+			try {
+				empresaRepository.save(empresa);
+				return new ResponseEntity<Empresa>(HttpStatus.CREATED);
+			} catch (Exception e) {
+				return new ResponseEntity<Empresa>(HttpStatus.BAD_REQUEST);
+			}
+		}
+		return new ResponseEntity<Empresa>(HttpStatus.BAD_REQUEST);
+	}
+
 	/*
 	 * @RequestMapping(value = "", method = RequestMethod.POST) public
-	 * ResponseEntity<Object> cadastroEmpresaPOST(@RequestBody Empresa empresa){
-	 * if(empresa != null) { empresaRepository.save(empresa); return
-	 * ResponseEntity.status(201).body(empresa); } else { Erro erro = new
-	 * Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null); return new
-	 * ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR); } }
+	 * ResponseEntity<Object> cadastrarEmpresaPost(@RequestBody Empresa empresa) {
+	 * 
+	 * if (empresaRepository.findByCnpj(empresa.getCnpj()) != null) { return new
+	 * ResponseEntity<Object>(HttpStatus.UNPROCESSABLE_ENTITY);
+	 * 
+	 * }
+	 * 
+	 * if (empresaRepository.findByCnpj(empresa.getCnpj()) == null try {
+	 * empresaRepository.save(empresa); return new
+	 * ResponseEntity<Object>(HttpStatus.CREATED); } catch (Exception e) { return
+	 * new ResponseEntity<Object>(HttpStatus.BAD_REQUEST); } } return new
+	 * ResponseEntity<Object>(HttpStatus.BAD_REQUEST); }
 	 */
-	@RequestMapping(value = "/VagaEmpresa", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> criarVagaporEmpresa(@RequestBody Empresa empresa, HttpServletRequest request, Long id) {
-		if (empresa != null) {
-			empresa.setAtivo(true);
-			
-			/*
-			 * for (int i = 0; i < empresa.getVagas().size(); i++) { Vaga vaga = new Vaga();
-			 * vaga.setId(empresa.getId().get(i).get);
-			 * 
-			 * }
-			 * 
-			 * empresaRepository.save(empresa);
-			 */
-			for (int i = 0; i < empresa.getVagas().size(); i++) {
-				Vaga vaga = empresa.getVagas().get(i);
-				vaga.setEmpresa(empresa);
-				vagaRepository.save(vaga);
-			}
-			
-			Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
 
-			Object[] arrayVagas = new Object[2];
-			arrayVagas[0] = sucesso;
-			arrayVagas[1] = empresa.getId(); 
+// metodo esta funcionando
+// metodo para atualizar os dados do usuario
+	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Object> atualizarEmpresa(@PathVariable("id") Long id, @RequestBody Empresa empresa,
+			HttpServletRequest request) {
 
-			ResponseEntity<Object> okpost = new ResponseEntity<Object>(arrayVagas, HttpStatus.OK);
-			return okpost;
-		} else {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "Não foi possivel cadastrar o curso", null);
+		if (empresa.getId() != id) {
+			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
 			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
+		} else {
+			// busca o usuario no banco de dados
+			empresaRepository.findById(id);
+
+			// criptografa a senha
+			// String cripto = this.passwordEncoder.encode(empresa.getSenha());
+
+			// pega a senha criptografada
+			// empresa.setSenha(cripto);
+
+			empresaRepository.save(empresa);
+			return new ResponseEntity<Object>(HttpStatus.OK);
 		}
 	}
 
-	
 	// metodo para listar todos as empresas inseridos no banco
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Empresa> listaEmpresa(Empresa empresa) {
 		return empresaRepository.findAll();
-		
+
 	}
-	
+
 	// refazendo metodo que tras a empresa pelo ID (GR)*add uma Query no Repository
 	@RequestMapping(value = "/empresaID/{id}", method = RequestMethod.GET)
-	public Iterable<Empresa> listaPorID(@PathVariable("id") Long id){
+	public Iterable<Empresa> listaPorID(@PathVariable("id") Long id) {
 		return empresaRepository.buscaPorIdEmpresa(id);
 	}
 	/*
@@ -120,7 +132,7 @@ public class EmpresaRestController {
 	 * } return ResponseEntity.status(200).body(e); } catch (Exception e) {
 	 * e.printStackTrace(); return ResponseEntity.status(500).body(e); } }
 	 */
-	
+
 	/*
 	 * //metodo para cadastrar empresa
 	 * 
@@ -135,31 +147,6 @@ public class EmpresaRestController {
 	 * ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR); } }
 	 */
 
-
-	// metodo para atualizar os dados da Empresa *Funcionando
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> atualizarEmpresa(@PathVariable("id") Long id, @RequestBody Empresa empresa,
-			HttpServletRequest request) {
-
-		if (empresa.getId() != id) {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-		} else {
-
-			// busca a empresa no banco de dados
-			empresaRepository.findById(id);
-
-			// criptografa a senha
-			String cripto = this.passwordEncoder.encode(empresa.getSenha());
-
-			// pega a senha criptografada
-			empresa.setSenha(cripto);
-
-			empresaRepository.save(empresa);
-			return new ResponseEntity<Object>(HttpStatus.OK);
-		}
-	}
-
 	// metodo para validar a senha quando fazer o login
 	public Boolean validarSenhaEmpresa(Empresa empresa) {
 		// pegando a senha no banco
@@ -171,72 +158,86 @@ public class EmpresaRestController {
 
 	// metodo para realizar login
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> login(@RequestBody Empresa empresa, HttpServletRequest request) {
+	public ResponseEntity<TokenJWT> login(@RequestBody Empresa empresa) {
+		// buscar o usuario no banco de dados
+		empresa = empresaRepository.findByCnpjAndSenha(empresa.getCnpj(), empresa.getSenha());
+		// verifica se o usuário não é nulo
 
-		validarSenhaEmpresa(empresa);
+		if (empresa != null) {
 
-		if (true) {
-			// se a senha for valida insere dentro da variavel
-			empresa = empresaRepository.findByIdAndSenha(empresa.getId(), empresa.getSenha());
+			// cria uma variavel payload e insere os dados da empresa
+			Map<String, Object> payload = new HashMap<String, Object>();
+			payload.put("id", empresa.getId());
+			payload.put("name", empresa.getNome());
+			payload.put("CNPJ", empresa.getCnpj());
+			payload.put("email", empresa.getEmail());
+			payload.put("senha", empresa.getSenha());
+			payload.put("vagas", empresa.getVagas());
+			payload.put("endereco", empresa.getEndereco());
+			payload.put("numero", empresa.getNumero());
+			payload.put("complemento", empresa.getComplemento());
+			payload.put("bairro", empresa.getBairro());
+			payload.put("cidade", empresa.getCidade());
+			payload.put("uf", empresa.getUf());
+			payload.put("tipoUser", empresa.getTipoUsuario().toString());
 
-			// verifica se existe empresa cadastrado
-			if (empresa != null) {
-				System.out.println(empresa.getCnpj());
+			// algoritmo para assinar o token
+			Algorithm algoritmo = Algorithm.HMAC256(SECRET);
+			// cria o token
+			TokenJWT tokenJwt = new TokenJWT();
+			// gera o token
+			tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritmo));
 
-				// cria uma variavel payload e insere os dados da empresa
-				Map<String, Object> payload = new HashMap<String, Object>();
+			System.out.println("passou pelo login");
+			return ResponseEntity.ok(tokenJwt);
 
-				payload.put("nome", empresa.getNome());
-				payload.put("email", empresa.getEmail());
-				payload.put("senha", empresa.getSenha());
-				payload.put("ativo", empresa.getAtivo());
-
-				// coloca assinatura do algoritmo no token
-				Algorithm algoritimo = Algorithm.HMAC512(SECRET);
-
-				// instancia a classe token
-				TokenJWT tokenJwt = new TokenJWT();
-
-				tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritimo));
-
-				System.out.println(tokenJwt);
-
-				// envia o token
-				return ResponseEntity.ok(tokenJwt);
-			}
+		} else {
+			System.out.println("passou direto");
+			return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
 		}
-		return new ResponseEntity<Object>(HttpStatus.UNAUTHORIZED);
 	}
 
-	/*
-	 * // metodo para tornar o estado Ativo da empresa como false
-	 * 
-	 * @RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT) public
-	 * ResponseEntity<Object> desativaEmpresa(@PathVariable("id") Long id,
-	 * HttpServletRequest request) { Optional<Empresa> desativar =
-	 * empresaRepository.findById(id);
-	 * 
-	 * if (desativar.get().getId() == id) { desativar.get().setAtivo(false);
-	 * empresaRepository.save(desativar.get()); System.out.println("passou aqui");
-	 * return new ResponseEntity<Object>(HttpStatus.OK);
-	 * 
-	 * } else { Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR,
-	 * "Não foi possivel desativar empresa", null);
-	 * System.out.println("xiiiiiiiiiiiiiiiiiiiiiiii"); return new
-	 * ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-	 */
-			
+	// metodo para tornar o estado Ativo da empresa como false
+	@RequestMapping(value = "/ativar/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> AtivarSolicitacao(@PathVariable("id") Long id, Empresa empresa,
+			HttpServletRequest request) {
+		empresa = empresaRepository.findById(id).get();
+		empresa.setAtivo(true);
+		empresaRepository.save(empresa);
+		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
+
+	}
+
+	// metodo para tornar o estado Ativo da empresa como false
 	@RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Object> desativar(@PathVariable("id") Long id, Empresa empresa,HttpServletRequest request) {		
+	public ResponseEntity<Object> desativarSolicitacao(@PathVariable("id") Long id, Empresa empresa,
+			HttpServletRequest request) {
 		empresa = empresaRepository.findById(id).get();
 		empresa.setAtivo(false);
 		empresaRepository.save(empresa);
 		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
 		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
-		
 
-		
 	}
 
-	
+	// metodo para tornar o estado Ativo da empresa como false
+	@RequestMapping(value = "/aprovar/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> AprovarSolicitacao(@PathVariable("id") Long id, Empresa empresa,
+			HttpServletRequest request) {
+		empresa = empresaRepository.findById(id).get();
+		empresa.setAprova(true);
+		empresaRepository.save(empresa);
+		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
+
+	}
+
+	@RequestMapping(value = "/excluir/{id}", method = RequestMethod.DELETE)
+	boolean CancelarSolicitacao(@PathVariable Long id) {
+		empresaRepository.deleteById(id);
+		return true;
+
+	}
+
 }

@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.Vaga;
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
@@ -30,7 +29,7 @@ public class VagaRestController {
 
 	// criar metodo que pega a empresa relacionada aquela vaga
 	// metodo para criar o curso
-		
+
 	// criar metodo que lista vaga por AreaProfissional *perguntar se é para listar
 	// em ordem de areaProfissional ou é para fazer uma busca por areaProfissional
 
@@ -63,14 +62,14 @@ public class VagaRestController {
 	}
 
 	// metodo para excluir vaga pelo id
-	@RequestMapping(value = "/excluir/{id}", method = RequestMethod.PUT)
+	@RequestMapping(value = "/excluir/{id}", method = RequestMethod.DELETE)
 	public boolean excluirVaga(@PathVariable Long id) {
 		vagaRepository.deleteById(id);
 		return true;
 	}
 
-	//metodo para editar vaga
-	@RequestMapping(value = "editavaga/{id}", method = RequestMethod.PUT)
+	// metodo para editar vaga
+	@RequestMapping(value = "/editavaga/{id}", method = RequestMethod.PUT)
 	public ResponseEntity<Object> editaVaga(@RequestBody Vaga vaga) {
 		if (vaga != null) {
 			vagaRepository.save(vaga);
@@ -80,17 +79,6 @@ public class VagaRestController {
 			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	
-	/*@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> attVagas(@PathVariable("id") Long id, @RequestBody Vaga vaga){
-		if (vaga.getId() != id) {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-		}else {
-			vagaRepository.save(vaga);
-			return new ResponseEntity<Object>(HttpStatus.OK);
-		}
-	}*/
-	
+
+
 }

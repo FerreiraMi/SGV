@@ -42,7 +42,6 @@ public class UsuarioRestController {
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	// criar metodo para alterar a senha
-	// criar metodo para enviar email "usuario cadastrado com sucesso";
 
 	// metodo está funcionando
 	// metodo para criar usuario
@@ -53,10 +52,7 @@ public class UsuarioRestController {
 			return new ResponseEntity<Usuario>(HttpStatus.UNPROCESSABLE_ENTITY);
 		} else if (usuarioRepository.findByCpf(usuario.getCpf()) != null) {
 			return new ResponseEntity<Usuario>(HttpStatus.CONFLICT);
-			/*
-			 * } else if (usuarioRepository.findByNif(usuario.getNif()) != null) { return
-			 * new ResponseEntity<Usuario>(HttpStatus.CONFLICT);
-			 */}
+			}
 
 		if (usuarioRepository.findByCpf(usuario.getCpf()) == null
 				|| usuarioRepository.findByEmail(usuario.getEmail()) == null) {
@@ -132,7 +128,6 @@ public class UsuarioRestController {
 		// buscar o usuario no banco de dados
 		usuario = usuarioRepository.findByCpfAndSenha(usuario.getCpf(), usuario.getSenha());
 		// verifica se o usuário não é nulo
-	
 
 		if (usuario != null) {
 			// variável para inserir dados no payload
@@ -141,6 +136,7 @@ public class UsuarioRestController {
 			payload.put("name", usuario.getNome());
 			payload.put("email", usuario.getEmail());
 			payload.put("cpf", usuario.getCpf());
+			payload.put("dadosPessoais", usuario.getDadosPessoais());
 			payload.put("TipoUser", usuario.getTipoUsuario().toString());
 
 			// algoritmo para assinar o token
@@ -149,10 +145,9 @@ public class UsuarioRestController {
 			TokenJWT tokenJwt = new TokenJWT();
 			// gera o token
 			tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritmo));
-			
+
 			System.out.println("passou pelo login");
 			return ResponseEntity.ok(tokenJwt);
-			
 
 		} else {
 			System.out.println("passou direto");
@@ -160,11 +155,11 @@ public class UsuarioRestController {
 		}
 	}
 
-	
-	  // metodo para excluir usuario pelo id
-	  	  @RequestMapping(value = "/excluir/{id}", method = RequestMethod.DELETE) public
-	                       boolean excluirUsuario(@PathVariable Long id) {
-	                       usuarioRepository.deleteById(id); return true; }
-	
-}
+	// metodo para excluir usuario pelo id
+	@RequestMapping(value = "/excluir/{id}", method = RequestMethod.DELETE)
+	public boolean excluirUsuario(@PathVariable Long id) {
+		usuarioRepository.deleteById(id);
+		return true;
+	}
 
+}

@@ -21,6 +21,12 @@ public interface EmpresaRepository extends PagingAndSortingRepository<Empresa, L
 	//Quey para buscar por id de Empresa Especificado
 	@Query("SELECT e FROM Empresa e WHERE e.id = :id")
 	public List<Empresa> buscaPorIdEmpresa(@Param("id") Long id);
+
+	public Object findByCnpj(String cnpj);
+
+	public Empresa findByCnpjAndSenha(String cnpj, String senha);
+
+	public Object findByEmail(String email);
 	
 	//
 	

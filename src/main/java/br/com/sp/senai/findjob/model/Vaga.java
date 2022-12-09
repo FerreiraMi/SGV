@@ -74,8 +74,8 @@ public class Vaga {
 	
 	private Boolean ativo;
 	
-	@Column(name = "area_profissional", nullable = true)
-	private AreaProfissional areaProfissional;
+	@Column(name = "areaProfissional", length = 5)
+	private String areaProfissional;
 
 	
 	@ManyToOne
