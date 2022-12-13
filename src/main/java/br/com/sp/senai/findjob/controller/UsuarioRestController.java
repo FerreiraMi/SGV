@@ -25,6 +25,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.TokenJWT;
 import br.com.sp.senai.findjob.model.Usuario;
+
 import br.com.sp.senai.findjob.repository.UsuarioRepository;
 
 @CrossOrigin
@@ -42,7 +43,6 @@ public class UsuarioRestController {
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
 	// criar metodo para alterar a senha
-
 	// metodo está funcionando
 	// metodo para criar usuario
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -92,27 +92,28 @@ public class UsuarioRestController {
 
 	// metodo esta funcionando
 	// metodo para atualizar os dados do usuario
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> atualizarUsuario(@PathVariable("id") Long id, @RequestBody Usuario usuario,
-			HttpServletRequest request) {
-
-		if (usuario.getId() != id) {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-		} else {
-			// busca o usuario no banco de dados
-			usuarioRepository.findById(id);
-
-			// criptografa a senha
-			String cripto = this.passwordEncoder.encode(usuario.getSenha());
-
-			// pega a senha criptografada
-			usuario.setSenha(cripto);
-
-			usuarioRepository.save(usuario);
-			return new ResponseEntity<Object>(HttpStatus.OK);
-		}
-	}
+	
+	/*
+	 * @RequestMapping(value = "/{id}", method = RequestMethod.PATCH, consumes =
+	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<Object>
+	 * atualizarUsuario(@PathVariable("id") Long id, @RequestBody Usuario usuario,
+	 * HttpServletRequest request) {
+	 * 
+	 * //if (usuario.getId() != id) { Erro erro = new
+	 * //Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null); return new
+	 * //ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR); } else { //
+	 * //busca o usuario no banco de dados usuarioRepository.findById(id);
+	 * 
+	 * // criptografa a senha String cripto = //
+	 * this.passwordEncoder.encode(usuario.getSenha());
+	 * 
+	 * // pega a senha criptografada usuario.setSenha(cripto);
+	 * 
+	 * usuarioRepository.save(usuario); return new
+	 * ResponseEntity<Object>(HttpStatus.OK); }
+	 */
+	  
+	 
 
 	// metodo para validar a senha quando fazer o login
 	public Boolean validarSenha(Usuario usuario) {
@@ -137,6 +138,7 @@ public class UsuarioRestController {
 			payload.put("email", usuario.getEmail());
 			payload.put("cpf", usuario.getCpf());
 			payload.put("dadosPessoais", usuario.getDadosPessoais());
+			payload.put("senha", usuario.getSenha());
 			payload.put("TipoUser", usuario.getTipoUsuario().toString());
 
 			// algoritmo para assinar o token
@@ -161,5 +163,20 @@ public class UsuarioRestController {
 		usuarioRepository.deleteById(id);
 		return true;
 	}
+	
 
+	// metodo para editar vaga
+		@RequestMapping(value = "/editausuario/{id}", method = RequestMethod.PUT)
+		public ResponseEntity<Usuario> editaUsuario(@RequestBody Usuario usuario) {
+			if (usuario != null) {
+				usuarioRepository.save(usuario);
+				System.out.println("passou aqui");
+
+				return ResponseEntity.status(201).body(usuario);
+			} else {
+				Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
+				System.out.println("passou direto");
+				return new ResponseEntity<Usuario>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
 }

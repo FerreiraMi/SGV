@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,8 +28,10 @@ import br.com.sp.senai.findjob.model.Empresa;
 import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.Sucesso;
 import br.com.sp.senai.findjob.model.TokenJWT;
+import br.com.sp.senai.findjob.model.Vaga;
 import br.com.sp.senai.findjob.repository.AdministradorRepository;
 
+@CrossOrigin
 @RestController
 @RequestMapping("api/adm")
 public class AdministradorRestController {
@@ -42,70 +45,93 @@ public class AdministradorRestController {
 	// metodo encoder para salvar a criptografia
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	
-	// cadastraadm e criptografa a senha dele
-	@RequestMapping(value = "", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Administrador> cadastraAdministrador(@RequestBody Administrador administrador,
-			HttpServletRequest request) {
-		if (administrador != null) {
-			// criptografa a senha
-			String cripto = this.passwordEncoder.encode(administrador.getSenha());
-
-			// pega a senha criptografada
-			administrador.setSenha(cripto);
-
-			// ativa o usuario no banco de dados
-			administrador.setAtivo(true);
-
-		}
-		try {
-			administradorRepository.save(administrador);
-			return ResponseEntity.status(201).body(administrador);
-		} catch (DataIntegrityViolationException e) {
-			e.printStackTrace();
-			return new ResponseEntity<Administrador>(HttpStatus.INTERNAL_SERVER_ERROR);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<Administrador>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-	
 	/*
-	 * // metodo para fazer o login
+	 * // cadastra adm e criptografa a senha dele
 	 * 
-	 * @RequestMapping(value = "/login", method = RequestMethod.POST, consumes =
-	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<Object>
-	 * login(@RequestBody Administrador administrador, HttpServletRequest request) {
+	 * @RequestMapping(value = "", method = RequestMethod.POST, consumes =
+	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<Administrador>
+	 * cadastraAdministrador(@RequestBody Administrador administrador,
+	 * HttpServletRequest request) { if (administrador != null) { // criptografa a
+	 * senha String cripto = this.passwordEncoder.encode(administrador.getSenha());
 	 * 
-	 * Boolean validar = validarSenhaAdm(administrador);
+	 * // pega a senha criptografada administrador.setSenha(cripto);
 	 * 
-	 * if (validar = true) { // insere nif e senha dentro da variavel administrador
-	 * = administradorRepository.findByIdAndSenha(administrador.getId(),
-	 * administrador.getSenha());
+	 * // ativa o usuario no banco de dados administrador.setAtivo(true);
 	 * 
-	 * // verifica se existe administrador cadastrado no banco if (administrador !=
-	 * null) { System.out.println(administrador.getNome());
-	 * 
-	 * Map<String, Object> payload = new HashMap<String, Object>();
-	 * 
-	 * payload.put("nome", administrador.getNome()); payload.put("email",
-	 * administrador.getEmail()); payload.put("senha", administrador.getSenha());
-	 * payload.put("nif", administrador.getNif());
-	 * 
-	 * // coloca assinatura do algoritmo no token Algorithm algoritmo =
-	 * Algorithm.HMAC512(SECRET);
-	 * 
-	 * // instancia a classe token TokenJWT tokenJwt = new TokenJWT();
-	 * 
-	 * // adiciona no token
-	 * tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(
-	 * algoritmo));
-	 * 
-	 * System.out.println(tokenJwt);
-	 * 
-	 * // envia o token return ResponseEntity.ok(tokenJwt); } } return new
-	 * ResponseEntity<Object>(HttpStatus.UNAUTHORIZED); }
+	 * } try { administradorRepository.save(administrador); return
+	 * ResponseEntity.status(201).body(administrador); } catch
+	 * (DataIntegrityViolationException e) { e.printStackTrace(); return new
+	 * ResponseEntity<Administrador>(HttpStatus.INTERNAL_SERVER_ERROR); } catch
+	 * (Exception e) { e.printStackTrace(); return new
+	 * ResponseEntity<Administrador>(HttpStatus.INTERNAL_SERVER_ERROR); } }
 	 */
+
+	// refeito metodo POST da Empresa (GR) *Alteração na model
+
+	@RequestMapping(value = "", method = RequestMethod.POST)
+	public ResponseEntity<Administrador> cadastroaAdmPOST(@RequestBody Administrador administrador) {
+
+		if (administradorRepository.findByEmail(administrador.getEmail()) != null) {
+			return new ResponseEntity<Administrador>(HttpStatus.UNPROCESSABLE_ENTITY);
+		} else if (administradorRepository.findByCpf(administrador.getCpf()) != null) {
+			return new ResponseEntity<Administrador>(HttpStatus.CONFLICT);
+		}
+
+		if (administradorRepository.findByEmail(administrador.getEmail()) == null
+				|| administradorRepository.findByCpf(administrador.getCpf()) == null) {
+			try {
+				administradorRepository.save(administrador);
+				return new ResponseEntity<Administrador>(HttpStatus.CREATED);
+			} catch (Exception e) {
+				return new ResponseEntity<Administrador>(HttpStatus.BAD_REQUEST);
+			}
+		}
+		return new ResponseEntity<Administrador>(HttpStatus.BAD_REQUEST);
+	}
+
+	// metodo para fazer o login
+
+	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<TokenJWT> login(@RequestBody Administrador administrador, HttpServletRequest request) {
+		
+		// buscar o adm no banco de dados
+				administrador = administradorRepository.findByCpfAndSenha(administrador.getCpf(), administrador.getSenha());
+				// verifica se o adm não é nulo
+		
+
+			// verifica se existe administrador cadastrado no banco
+			if (administrador != null) {
+				System.out.println(administrador.getNome());
+			
+
+			Map<String, Object> payload = new HashMap<String, Object>();
+			payload.put("id", administrador.getId());
+			payload.put("name", administrador.getNome());
+			payload.put("email", administrador.getEmail());
+			payload.put("senha", administrador.getSenha());
+			payload.put("cpf", administrador.getCpf());
+			payload.put("ativo", administrador.getAtivo());
+			payload.put("tipoUser", administrador.getTipoUsuario().toString());
+
+
+			// coloca assinatura do algoritmo no token
+			Algorithm algoritmo = Algorithm.HMAC512(SECRET);
+
+			// instancia a classe token
+			TokenJWT tokenJwt = new TokenJWT();
+
+			// adiciona no token
+			tokenJwt.setToken(JWT.create().withPayload(payload).withIssuer(EMISSOR).sign(algoritmo));
+
+			System.out.println(tokenJwt);
+
+			// envia o token
+			return ResponseEntity.ok(tokenJwt);
+		} else {
+			return new ResponseEntity<TokenJWT>(HttpStatus.UNAUTHORIZED);
+		}
+}
+	
 
 	// metodo para validar a senha quando fazer o login
 	public Boolean validarSenhaAdm(Administrador administrador) {
@@ -115,6 +141,7 @@ public class AdministradorRestController {
 		Boolean valido = passwordEncoder.matches(administrador.getSenha(), senha);
 		return valido;
 	}
+
 	@RequestMapping(value = "", method = RequestMethod.GET)
 	public Iterable<Administrador> buscaAdm(Administrador administrador) {
 		return administradorRepository.findAll();
@@ -151,8 +178,40 @@ public class AdministradorRestController {
 
 	}
 
-	@RequestMapping(value = "/ativarAdm/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Object> desativarAdm(@PathVariable("id") Long id, Administrador administrador,
+	// metodo para editar adm
+		@RequestMapping(value = "/editaadm/{id}", method = RequestMethod.PUT)
+		public ResponseEntity<Administrador> editaAdm(@RequestBody Administrador administrador) {
+			if (administrador != null) {
+				administradorRepository.save(administrador);
+				System.out.println("passou aqui");
+
+				return ResponseEntity.status(201).body(administrador);
+			} else {
+				Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
+				System.out.println("passou direto");
+				return new ResponseEntity<Administrador>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
+	@RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> desativarSolicitacao(@PathVariable("id") Long id, Administrador administrador,
+			HttpServletRequest request) {
+		administrador = administradorRepository.findById(id).get();
+		administrador.setAtivo(false);
+		administradorRepository.save(administrador);
+		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
+
+	}
+	
+	// refazendo metodo que tras a empresa pelo ID (GR)*add uma Query no Repository
+		@RequestMapping(value = "/buscaadm/{id}", method = RequestMethod.GET)
+		public Iterable<Administrador> listaPorID(@PathVariable("id") Long id) {
+			return administradorRepository.buscaPorId(id);
+		}
+		
+
+	@RequestMapping(value = "/ativar/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> ativarSolicitacao(@PathVariable("id") Long id, Administrador administrador,
 			HttpServletRequest request) {
 		administrador = administradorRepository.findById(id).get();
 		administrador.setAtivo(true);

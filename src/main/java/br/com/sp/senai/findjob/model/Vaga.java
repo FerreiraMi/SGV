@@ -45,16 +45,16 @@ public class Vaga {
 	@Column(name = "desejavel", nullable = true)
 	private String desejavel;
 	
-	@Column(name = "descricao", nullable = true)
+	@Column(name = "descricao",  nullable = true)
 	private String descricao;
 	
 	@Column(name = "cuidados", length = 50, nullable = false)
 	private String cuidados;
 	
-	@Column(name = "expiracao", nullable = false)
+	@Column(name = "expiracao", nullable = true)
 	private String expiracao;
 	
-	@Column(name = "publicacao", nullable = false)
+	@Column(name = "publicacao", nullable = true)
 	private String publicacao;
 	
 	@Column(name = "site", length = 50, nullable = false)
@@ -74,7 +74,7 @@ public class Vaga {
 	
 	private Boolean ativo;
 	
-	@Column(name = "areaProfissional", length = 5)
+	@Column(name = "areaProfissional", length = 50,  nullable = false)
 	private String areaProfissional;
 
 	

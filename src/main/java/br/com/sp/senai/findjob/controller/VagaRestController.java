@@ -2,21 +2,27 @@ package br.com.sp.senai.findjob.controller;
 
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import br.com.sp.senai.findjob.model.Empresa;
 import br.com.sp.senai.findjob.model.Erro;
+import br.com.sp.senai.findjob.model.Sucesso;
 import br.com.sp.senai.findjob.model.Vaga;
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
 
 import br.com.sp.senai.findjob.repository.VagaRepository;
 
+@CrossOrigin
 @RestController
 @RequestMapping("api/empresa/vaga")
 public class VagaRestController {
@@ -56,7 +62,7 @@ public class VagaRestController {
 
 	// Metodo feito para trazer Vagas conforme o ID da Empresa (GR)
 	// criar metodo que lista vaga por Empresa
-	@RequestMapping(value = "/buscaVaga/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/buscavaga/{id}", method = RequestMethod.GET)
 	public List<Vaga> buscaVagaConformeEmpresa(@PathVariable("id") Long id) {
 		return vagaRepository.buscaVagaPorEmpresa(id);
 	}
@@ -70,15 +76,41 @@ public class VagaRestController {
 
 	// metodo para editar vaga
 	@RequestMapping(value = "/editavaga/{id}", method = RequestMethod.PUT)
-	public ResponseEntity<Object> editaVaga(@RequestBody Vaga vaga) {
+	public ResponseEntity<Vaga> editaVaga(@RequestBody Vaga vaga) {
 		if (vaga != null) {
 			vagaRepository.save(vaga);
+			System.out.println("passou aqui");
+
 			return ResponseEntity.status(201).body(vaga);
 		} else {
 			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
+			System.out.println("passou direto");
+			return new ResponseEntity<Vaga>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
+	// metodo para tornar o estado Ativo da vaga como false
+	@RequestMapping(value = "/desativar/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> desativarSolicitacao(@PathVariable("id") Long id, Vaga vaga,
+			HttpServletRequest request) {
+		vaga = vagaRepository.findById(id).get();
+		vaga.setAtivo(false);
+		vagaRepository.save(vaga);
+		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
+
+	}
+
+	// metodo para tornar o estado Ativo da vaga como false
+	@RequestMapping(value = "/ativar/{id}", method = RequestMethod.PUT)
+	public ResponseEntity<Object> ativarSolicitacao(@PathVariable("id") Long id, Vaga vaga,
+			HttpServletRequest request) {
+		vaga = vagaRepository.findById(id).get();
+		vaga.setAtivo(true);
+		vagaRepository.save(vaga);
+		Sucesso sucesso = new Sucesso(HttpStatus.OK, "Sucesso");
+		return new ResponseEntity<Object>(sucesso, HttpStatus.OK);
+
+	}
 
 }

@@ -38,7 +38,7 @@ public class Empresa {
 	private String telefone;
 
 	@Column(name = "cnpj", length = 20)
-	// @CNPJ
+	@CNPJ
 	private String cnpj;
 
 	@JsonProperty(access = Access.WRITE_ONLY)

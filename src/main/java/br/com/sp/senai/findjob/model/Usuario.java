@@ -27,9 +27,13 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Long id;
-
+	
 	@Column(name = "nome", length = 200, nullable = false)
 	private String nome;
+	
+	
+	@Column(name = "imagem")
+	private String imagem;
 	
 	@Email(message = "insira um email válido!")
 	@Column(name = "email", length = 100, nullable = false, unique = true)

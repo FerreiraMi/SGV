@@ -1,3 +1,6 @@
+
+
+
 package br.com.sp.senai.findjob.controller;
 
 import java.util.HashMap;
@@ -26,6 +29,7 @@ import br.com.sp.senai.findjob.model.Erro;
 import br.com.sp.senai.findjob.model.Sucesso;
 import br.com.sp.senai.findjob.model.TokenJWT;
 import br.com.sp.senai.findjob.model.Usuario;
+import br.com.sp.senai.findjob.model.Vaga;
 import br.com.sp.senai.findjob.repository.EmpresaRepository;
 import br.com.sp.senai.findjob.repository.VagaRepository;
 
@@ -44,7 +48,6 @@ public class EmpresaRestController {
 	// metodo encoder para salvar a criptografia
 	private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-	// cria o alterar senha
 
 	// refeito metodo POST da Empresa (GR) *Alteração na model
 
@@ -87,27 +90,25 @@ public class EmpresaRestController {
 
 // metodo esta funcionando
 // metodo para atualizar os dados do usuario
-	@RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Object> atualizarEmpresa(@PathVariable("id") Long id, @RequestBody Empresa empresa,
-			HttpServletRequest request) {
-
-		if (empresa.getId() != id) {
-			Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
-			return new ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR);
-		} else {
-			// busca o usuario no banco de dados
-			empresaRepository.findById(id);
-
-			// criptografa a senha
-			// String cripto = this.passwordEncoder.encode(empresa.getSenha());
-
-			// pega a senha criptografada
-			// empresa.setSenha(cripto);
-
-			empresaRepository.save(empresa);
-			return new ResponseEntity<Object>(HttpStatus.OK);
-		}
-	}
+	/*
+	 * @RequestMapping(value = "/{id}", method = RequestMethod.PUT, consumes =
+	 * MediaType.APPLICATION_JSON_VALUE) public ResponseEntity<Object>
+	 * atualizarEmpresa(@PathVariable("id") Long id, @RequestBody Empresa empresa,
+	 * HttpServletRequest request) {
+	 * 
+	 * if (empresa.getId() != id) { Erro erro = new
+	 * Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null); return new
+	 * ResponseEntity<Object>(erro, HttpStatus.INTERNAL_SERVER_ERROR); } else { //
+	 * busca o usuario no banco de dados empresaRepository.findById(id);
+	 * 
+	 * // criptografa a senha // String cripto =
+	 * this.passwordEncoder.encode(empresa.getSenha());
+	 * 
+	 * // pega a senha criptografada // empresa.setSenha(cripto);
+	 * 
+	 * empresaRepository.save(empresa); return new
+	 * ResponseEntity<Object>(HttpStatus.OK); } }
+	 */
 
 	// metodo para listar todos as empresas inseridos no banco
 	@RequestMapping(value = "", method = RequestMethod.GET)
@@ -117,7 +118,7 @@ public class EmpresaRestController {
 	}
 
 	// refazendo metodo que tras a empresa pelo ID (GR)*add uma Query no Repository
-	@RequestMapping(value = "/empresaID/{id}", method = RequestMethod.GET)
+	@RequestMapping(value = "/buscaempresa/{id}", method = RequestMethod.GET)
 	public Iterable<Empresa> listaPorID(@PathVariable("id") Long id) {
 		return empresaRepository.buscaPorIdEmpresa(id);
 	}
@@ -167,20 +168,23 @@ public class EmpresaRestController {
 
 			// cria uma variavel payload e insere os dados da empresa
 			Map<String, Object> payload = new HashMap<String, Object>();
-			payload.put("id", empresa.getId());
-			payload.put("name", empresa.getNome());
-			payload.put("CNPJ", empresa.getCnpj());
-			payload.put("email", empresa.getEmail());
-			payload.put("senha", empresa.getSenha());
-			payload.put("vagas", empresa.getVagas());
-			payload.put("endereco", empresa.getEndereco());
-			payload.put("numero", empresa.getNumero());
-			payload.put("complemento", empresa.getComplemento());
-			payload.put("bairro", empresa.getBairro());
-			payload.put("cidade", empresa.getCidade());
+			payload.put("id",empresa.getId());
+			payload.put("name",empresa.getNome());
+			payload.put("CNPJ",empresa.getCnpj());
+			payload.put("email",empresa.getEmail());
+			payload.put("senha",empresa.getSenha());
+			payload.put("endereco",empresa.getEndereco());
+			payload.put("numero",empresa.getNumero());
+			payload.put("complemento",empresa.getComplemento());
+			payload.put("bairro",empresa.getBairro());
+			payload.put("cidade",empresa.getCidade());
 			payload.put("uf", empresa.getUf());
-			payload.put("tipoUser", empresa.getTipoUsuario().toString());
-
+			payload.put("ativo",empresa.getAtivo());
+			payload.put("tipoUser",empresa.getTipoUsuario().toString());
+			payload.put("aprovado", empresa.getAprova());
+			payload.put("cep",empresa.getCep());
+			payload.put("telefone",empresa.getTelefone());
+			payload.put("senha",empresa.getSenha());
 			// algoritmo para assinar o token
 			Algorithm algoritmo = Algorithm.HMAC256(SECRET);
 			// cria o token
@@ -239,5 +243,20 @@ public class EmpresaRestController {
 		return true;
 
 	}
+	
+	// metodo para editar empresa
+		@RequestMapping(value = "/editaempresa/{id}", method = RequestMethod.PUT)
+		public ResponseEntity<Empresa> editaEmpresa(@RequestBody Empresa empresa) {
+			if (empresa != null) {
+				empresaRepository.save(empresa);
+				System.out.println("passou aqui");
+
+				return ResponseEntity.status(201).body(empresa);
+			} else {
+				Erro erro = new Erro(HttpStatus.INTERNAL_SERVER_ERROR, "ID inválido", null);
+			
+				return new ResponseEntity<Empresa>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+		}
 
 }

@@ -8,6 +8,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 
+import org.hibernate.validator.constraints.br.CPF;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
@@ -33,9 +35,15 @@ public class Administrador {
 	@Column(name = "nif", length = 50, nullable = true)
 	private String nif;
 	
+	@CPF
+	@Column(name = "cpf", length = 50, nullable = true)
+	private String cpf;
+	
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(name = "senha", columnDefinition = "TEXT", nullable = false)
 	private String senha;
 	
 	private Boolean ativo;
+	
+	public TipoUsuario tipoUsuario;
 }
